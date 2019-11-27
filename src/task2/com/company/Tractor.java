@@ -32,7 +32,7 @@ public class Tractor {
         orientation.moveForward(position);
         if (position.getX() < 1 || position.getX() > field.getX() ||
                 position.getY() < 1 || position.getY() > field.getY()) {
-            throw new TractorInDitchException("Tractor in the ditch+++");
+            throw new TractorInDitchException("Tractor in the ditch");
         }
     }
 
