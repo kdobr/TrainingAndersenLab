@@ -1,3 +1,2 @@
 # TrainingAndersenLab
-My First training
-123
+This repo for my training in Andersen
