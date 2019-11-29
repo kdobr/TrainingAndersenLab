@@ -18,4 +18,6 @@ public interface List<E> extends Iterable<E> {
     boolean remove(E element);
 
     void clear();
+
+    void reverseOrder();
 }

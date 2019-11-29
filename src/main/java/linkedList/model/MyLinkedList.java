@@ -205,4 +205,21 @@ public class MyLinkedList<E> implements List<E> {
             this.next = next;
         }
     }
+
+    @Override
+    public void reverseOrder() {
+
+        Node<E> temp = head;
+        head = tail;
+        tail = temp;
+
+        Node<E> current = head;
+
+        while (current != null) {
+            temp = current.next;
+            current.next = current.prev;
+            current.prev = temp;
+            current = current.next;
+        }
+    }
 }

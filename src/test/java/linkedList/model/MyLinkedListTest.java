@@ -3,6 +3,9 @@ package linkedList.model;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class MyLinkedListTest {
@@ -74,5 +77,13 @@ class MyLinkedListTest {
     void clear() {
         strList.clear();
         assertEquals(0, strList.size());
+    }
+
+    @Test
+    void reverseOrder() {
+        java.util.List test = new LinkedList<String>(Arrays.asList("Hibernate", "Spring", "Angular", "Javascript",
+                "CSS", "JHTML", "Java"));
+        strList.reverseOrder();
+        assertIterableEquals(test, strList);
     }
 }
