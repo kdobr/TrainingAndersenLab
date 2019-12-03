@@ -1,0 +1,7 @@
+The platform is responsible for launching testing frameworks on the JVM.
+It defines a stable and powerful interface between JUnit and its client such as build tools.
+
+
+&&
+*
+hg
