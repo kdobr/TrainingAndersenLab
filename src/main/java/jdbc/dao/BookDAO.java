@@ -14,11 +14,9 @@ import java.util.List;
 
 public class BookDAO {
 
-    //  private Connection connection;
     private Executor executor;
 
     public BookDAO() {
-        //  this.connection = connection;
         executor = new Executor();
     }
 

@@ -13,10 +13,12 @@ public class Main {
 
         BookDAO bookDAO = new BookDAO();
         AuthorDAO authorDAO = new AuthorDAO();
-        //bookDAO.updateBook("First", "VeryFirst");
         System.out.println(authorDAO.getAuthorByName("Michel"));
         System.out.println(authorDAO.getAuthorById(2));
-       // System.out.println(authorDAO.getAllAuthors());
+        System.out.println(authorDAO.getAuthorById(3));
+        System.out.println(authorDAO.getAllAuthors());
+        authorDAO.deleteAuthor("Tempt");
+        System.out.println(authorDAO.getAllAuthors());
     }
 
     public static Connection getMysqlConnection() {
