@@ -1,9 +1,8 @@
 package hibernate.dao;
 
 
-import hibernate.exeptions.MyAppException;
-import hibernate.exeptions.MyAppExceptionNoAuthor;
-import hibernate.exeptions.MyAppExceptionNoBook;
+import hibernate.exeptions.AuthorExistsExceprion;
+import hibernate.exeptions.BookNotExistsExceprion;
 import hibernate.model.Author;
 import hibernate.model.Book;
 import org.hibernate.HibernateException;
@@ -12,8 +11,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
 import javax.persistence.Query;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,62 +18,57 @@ import java.util.Optional;
 
 public class BookDAO {
 
-    private SessionFactory factory;
+    private final SessionFactory factory;
 
     public BookDAO(SessionFactory factory) {
         this.factory = factory;
     }
 
-    public void addBook(String title) throws MyAppException {
-        Session session = factory.openSession();
-        try {
-            session.beginTransaction();
-            Optional<Book> bookOpt = validateBookByTitle(title, session);
-            if (bookOpt.isPresent()) {
-                throw new MyAppException("this book exists");
-            }
+    public void addBook(String title) {
+        Transaction transaction = null;
+        try (Session session = factory.openSession()) {
+            transaction = session.beginTransaction();
+            Optional<Book> bookOpt = findBookByTitle(title, session);
+            bookOpt.ifPresent(a -> {
+                throw new AuthorExistsExceprion(title);
+            });
             session.save(new Book(title));
             session.getTransaction().commit();
-        } catch (HibernateException e) {
-            session.getTransaction().rollback();
-        } finally {
-            session.close();
+        } catch (RuntimeException e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
         }
     }
 
-    public void deleteBook(String title) throws MyAppException {
-        Session session = factory.openSession();
-        try {
-            session.beginTransaction();
-            Optional<Book> bookOpt = validateBookByTitle(title, session);
-            if (!bookOpt.isPresent()) {
-                throw new MyAppException("no such book");
-            }
-            session.delete(bookOpt.get());
+    public void deleteBook(String title) {
+        Transaction transaction = null;
+        try (Session session = factory.openSession()) {
+            transaction = session.beginTransaction();
+            Optional<Book> bookOpt = findBookByTitle(title, session);
+            session.delete(bookOpt.orElseThrow(() -> new BookNotExistsExceprion(title)));
             session.getTransaction().commit();
-        } catch (HibernateException e) {
-            session.getTransaction().rollback();
-        } finally {
-            session.close();
+        } catch (RuntimeException e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
         }
     }
 
     public Book getBookByTitle(String title) {
-        Session session = factory.openSession();
+        Transaction transaction = null;
         Book book = null;
-        Optional<Book> bookOpt = validateBookByTitle(title, session);
-        if (!bookOpt.isPresent()) {
-            throw new MyAppException("this book not exists");
-        }
-        try {
-            session.beginTransaction();
-            book = bookOpt.get();
+        try (Session session = factory.openSession()) {
+            Optional<Book> bookOpt = findBookByTitle(title, session);
+            book = bookOpt.orElseThrow(() -> new BookNotExistsExceprion(title));
+            transaction = session.beginTransaction();
             int aTemp = book.getAuthorList().size();
             session.getTransaction().commit();
-        } catch (HibernateException e) {
-            session.getTransaction().rollback();
-        } finally {
-            session.close();
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            if (transaction != null) {
+                transaction.rollback();
+            }
         }
         return book;
     }
@@ -99,60 +91,51 @@ public class BookDAO {
 
     public List<Book> getAllBooks() {
         List<Book> bookList = new ArrayList<>();
-        Session session = factory.openSession();
-        try {
+        try (Session session = factory.openSession()) {
             Transaction transaction = session.beginTransaction();
             bookList = session.createQuery("FROM Book").getResultList();
             transaction.commit();
             session.close();
-        } catch (HibernateException e) {
+        } catch (RuntimeException e) {
             e.printStackTrace();
-        } finally {
-            session.close();
         }
         return bookList;
     }
 
-    public List<Author> getAllAuthorsOfBook(String title) throws SQLException {
+    public List<Author> getAllAuthorsOfBook(String title) {
         Book book = getBookByTitle(title);
         return book.getAuthorList();
     }
 
-    public void updateBook(String oldTitle, String newTitle) throws MyAppException {
-        Session session = factory.openSession();
-        Transaction transaction = session.beginTransaction();
-        try {
-
-            Optional<Book> bookCheck = validateBookByTitle(oldTitle, session);
-            if (!bookCheck.isPresent()) {
-                throw new MyAppException("no such book");
-            }
-            bookCheck.get().setTitle(newTitle);
+    public void updateBook(String oldTitle, String newTitle) {
+        Transaction transaction = null;
+        try (Session session = factory.openSession()) {
+            transaction = session.beginTransaction();
+            Optional<Book> bookCheck = findBookByTitle(oldTitle, session);
+            Book book = bookCheck.orElseThrow(() -> new BookNotExistsExceprion(oldTitle));
+            book.setTitle(newTitle);
             transaction.commit();
-        } catch (MyAppException e) {
-            throw e;
         } catch (RuntimeException e) {
-            try {
+            System.out.println(e.getMessage());
+            if (transaction != null) {
                 transaction.rollback();
-                printTransactionError();
-            } catch (Exception eRoll) {
-                printRollBackError();
             }
-        } finally {
-            session.close();
         }
     }
 
+    private Optional<Book> findBookByTitle(String title, Session session) {
 
-    private Optional<Book> validateBookByTitle(String title, Session session) {
-
-        Optional<Book> bookOpt = Optional.empty();
         String hql = "from Book where title = :title";
         Query query = session.createQuery(hql);
         query.setParameter("title", title);
-        bookOpt = (Optional<Book>) (query.getResultList().size() > 0 ? Optional.of(query.getResultList().get(0)) : bookOpt);
-        return bookOpt;
+        List<Book> tempList = query.getResultList();
+        if (tempList.size() != 0) {
+            return Optional.of(tempList.get(0));
+        } else {
+            return Optional.empty();
+        }
     }
+
 
     private void printRollBackError() {
         System.err.println("Couldn’t roll back transaction");

@@ -2,10 +2,6 @@ package hibernate;
 
 import hibernate.dao.AuthorDAO;
 import hibernate.dao.BookDAO;
-import hibernate.exeptions.MyAppException;
-import hibernate.exeptions.MyAppExceptionNoAuthor;
-import hibernate.model.Author;
-import hibernate.model.Book;
 import hibernate.util.DBHelper;
 
 import org.hibernate.SessionFactory;
@@ -20,27 +16,9 @@ public class Main {
         SessionFactory factory = DBHelper.getSessionFactory();
         BookDAO bookDAO = new BookDAO(factory);
         AuthorDAO authorDAO = new AuthorDAO(factory);
-//        Author Jim = new Author("Jim");
-//        Jim.addBook(new Book("Jim's book"));
-        authorDAO.addBookToAuthor("Bob", "Green Book");
-        //bookDAO.getAllBooks();
-//        System.out.println(bookDAO.getBookByTitle("Sixthh"));
-//
-//        System.out.println(bookDAO.getAllAuthorsOfBook("Sixthh"));
-
-      //  System.out.println(author.getBookList());
-      //  authorDAO.deleteAuthor("Jim");
-//        System.out.println(authorDAO.getAuthorByName("Bob"));
-//       System.out.println(authorDAO.getAuthorById(20));
-      //  authorDAO.updateAuthor("BAAb", "Bob");
-//        System.out.println(authorDAO.getAuthorById(5));
-
-      //  System.out.println(authorDAO.getAllAuthors());
-       // System.out.println(authorDAO.getAuthorByName("Bobb").orElseThrow(new MyAppExceptionNoAuthor()));
-
-
+        System.out.println(bookDAO.getAllAuthorsOfBook("Third"));
+        System.out.println(bookDAO.getAllBooks());
     }
-
 
     public static Connection getMysqlConnection() {
 
