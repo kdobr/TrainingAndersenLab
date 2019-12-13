@@ -95,7 +95,6 @@ public class AuthorDAO {
             transaction = session.beginTransaction();
             author = session.get(Author.class, id);
             session.getTransaction().commit();
-            session.close();
         } catch (RuntimeException e) {
             if (transaction != null) {
                 transaction.rollback();
@@ -110,7 +109,6 @@ public class AuthorDAO {
             Transaction transaction = session.beginTransaction();
             authorList = session.createQuery("FROM Author").getResultList();
             transaction.commit();
-            session.close();
         } catch (RuntimeException e) {
             e.printStackTrace();
         }

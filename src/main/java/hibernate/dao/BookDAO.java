@@ -75,16 +75,17 @@ public class BookDAO {
 
     public Book getBookById(int id) {
         Book book = null;
-        Session session = factory.openSession();
-        try {
-            session.beginTransaction();
+        Transaction transaction = null;
+
+        try (Session session = factory.openSession()) {
+            transaction = session.beginTransaction();
             book = session.get(Book.class, id);
             session.getTransaction().commit();
             session.close();
         } catch (HibernateException e) {
-            session.getTransaction().rollback();
-        } finally {
-            session.close();
+            if (transaction != null) {
+                transaction.rollback();
+            }
         }
         return book;
     }
@@ -95,7 +96,6 @@ public class BookDAO {
             Transaction transaction = session.beginTransaction();
             bookList = session.createQuery("FROM Book").getResultList();
             transaction.commit();
-            session.close();
         } catch (RuntimeException e) {
             e.printStackTrace();
         }
