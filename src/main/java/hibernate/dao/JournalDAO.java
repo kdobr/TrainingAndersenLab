@@ -3,8 +3,10 @@ package hibernate.dao;
 
 import hibernate.exeptions.AuthorExistsExceprion;
 import hibernate.exeptions.BookNotExistsExceprion;
+import hibernate.model.editions.Edition;
+import hibernate.model.editions.Journal;
 import hibernate.model.writers.Author;
-import hibernate.model.editions.Book;
+import hibernate.model.writers.Columnist;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -15,23 +17,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class BookDAO {
+public class JournalDAO {
 
     private final SessionFactory factory;
 
-    public BookDAO(SessionFactory factory) {
+    public JournalDAO(SessionFactory factory) {
         this.factory = factory;
     }
 
-    public void addBook(String title) {
+    public void addJournal(String title) {
         Transaction transaction = null;
         try (Session session = factory.openSession()) {
             transaction = session.beginTransaction();
-            Optional<Book> bookOpt = findBookByTitle(title, session);
-            bookOpt.ifPresent(a -> {
+            Optional<Journal> journalOpt = findJournalByTitle(title, session);
+            journalOpt.ifPresent(a -> {
                 throw new AuthorExistsExceprion(title);
             });
-            session.save(new Book(title));
+            session.save(new Journal(title));
             session.getTransaction().commit();
         } catch (RuntimeException e) {
             if (transaction != null) {
@@ -40,12 +42,12 @@ public class BookDAO {
         }
     }
 
-    public void deleteBook(String title) {
+    public void deleteJournal(String title) {
         Transaction transaction = null;
         try (Session session = factory.openSession()) {
             transaction = session.beginTransaction();
-            Optional<Book> bookOpt = findBookByTitle(title, session);
-            session.delete(bookOpt.orElseThrow(() -> new BookNotExistsExceprion(title)));
+            Optional<Journal> journalOpt = findJournalByTitle(title, session);
+            session.delete(journalOpt.orElseThrow(() -> new BookNotExistsExceprion(title)));
             session.getTransaction().commit();
         } catch (RuntimeException e) {
             if (transaction != null) {
@@ -54,14 +56,14 @@ public class BookDAO {
         }
     }
 
-    public Book getBookByTitle(String title) {
+    public Journal getJournalByTitle(String title) {
         Transaction transaction = null;
-        Book book = null;
+        Journal journal = null;
         try (Session session = factory.openSession()) {
-            Optional<Book> bookOpt = findBookByTitle(title, session);
-            book = bookOpt.orElseThrow(() -> new BookNotExistsExceprion(title));
+            Optional<Journal> bookOpt = findJournalByTitle(title, session);
+            journal = bookOpt.orElseThrow(() -> new BookNotExistsExceprion(title));
             transaction = session.beginTransaction();
-            int aTemp = book.getAuthorList().size();
+            int aTemp = journal.getColumnistList().size();
             session.getTransaction().commit();
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
@@ -69,16 +71,16 @@ public class BookDAO {
                 transaction.rollback();
             }
         }
-        return book;
+        return journal;
     }
 
-    public Book getBookById(int id) {
-        Book book = null;
+    public Journal getJournalById(int id) {
+        Journal journal = null;
         Transaction transaction = null;
 
         try (Session session = factory.openSession()) {
             transaction = session.beginTransaction();
-            book = session.get(Book.class, id);
+            journal = session.get(Journal.class, id);
             session.getTransaction().commit();
             session.close();
         } catch (HibernateException e) {
@@ -86,33 +88,33 @@ public class BookDAO {
                 transaction.rollback();
             }
         }
-        return book;
+        return journal;
     }
 
-    public List<Book> getAllBooks() {
-        List<Book> bookList = new ArrayList<>();
+    public List<Journal> getAllJournals() {
+        List<Journal> journalList = new ArrayList<>();
         try (Session session = factory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            bookList = session.createQuery("FROM Book").getResultList();
+            journalList = session.createQuery("FROM Journal").getResultList();
             transaction.commit();
         } catch (RuntimeException e) {
             e.printStackTrace();
         }
-        return bookList;
+        return journalList;
     }
 
-    public List<Author> getAllAuthorsOfBook(String title) {
-        Book book = getBookByTitle(title);
-        return book.getAuthorList();
+    public List<Columnist> getAllColumnistOfJournal(String title) {
+        Journal journal =  getJournalByTitle(title);
+        return journal.getColumnistList();
     }
 
-    public void updateBook(String oldTitle, String newTitle) {
+    public void updateJournal(String oldTitle, String newTitle) {
         Transaction transaction = null;
         try (Session session = factory.openSession()) {
             transaction = session.beginTransaction();
-            Optional<Book> bookCheck = findBookByTitle(oldTitle, session);
-            Book book = bookCheck.orElseThrow(() -> new BookNotExistsExceprion(oldTitle));
-            book.setTitle(newTitle);
+            Optional<Journal> bookCheck = findJournalByTitle(oldTitle, session);
+            Journal journal = bookCheck.orElseThrow(() -> new BookNotExistsExceprion(oldTitle));
+            journal.setTitle(newTitle);
             transaction.commit();
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
@@ -122,12 +124,12 @@ public class BookDAO {
         }
     }
 
-    private Optional<Book> findBookByTitle(String title, Session session) {
+    private Optional<Journal> findJournalByTitle(String title, Session session) {
 
-        String hql = "from Book where title = :title";
+        String hql = "from Journal where title = :title";
         Query query = session.createQuery(hql);
         query.setParameter("title", title);
-        List<Book> tempList = query.getResultList();
+        List<Journal> tempList = query.getResultList();
         if (tempList.size() != 0) {
             return Optional.of(tempList.get(0));
         } else {
@@ -135,6 +137,14 @@ public class BookDAO {
         }
     }
 
+    public void printAllEditions(){
+        Session session = factory.openSession();
+        String hql = "SELECT b FROM Edition b";
+        Query query = session.createQuery(hql);
+        List<Edition> list = query.getResultList();
+        System.out.println(list);
+        session.close();
+    }
 
     private void printRollBackError() {
         System.err.println("Couldn’t roll back transaction");

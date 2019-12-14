@@ -23,7 +23,7 @@
 
 		<!-- Set the current session context -->
 		<property name="current_session_context_class">thread</property>
-		<property name="hbm2ddl_auto">update</property>
+		<property name="hbm2ddl_auto">validate</property>
 
     </session-factory>
 

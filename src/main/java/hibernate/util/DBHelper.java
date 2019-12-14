@@ -1,7 +1,11 @@
 package hibernate.util;
 
-import hibernate.model.Author;
-import hibernate.model.Book;
+import hibernate.model.editions.Edition;
+import hibernate.model.editions.Journal;
+import hibernate.model.writers.Author;
+import hibernate.model.editions.Book;
+import hibernate.model.writers.Columnist;
+import hibernate.model.writers.WritingPerson;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
@@ -23,6 +27,10 @@ public class DBHelper {
         SessionFactory factory = new Configuration().configure("hibernate.cfg.xml")
                 .addAnnotatedClass(Author.class)
                 .addAnnotatedClass(Book.class)
+                .addAnnotatedClass(Journal.class)
+                .addAnnotatedClass(Edition.class)
+                .addAnnotatedClass(WritingPerson.class)
+                .addAnnotatedClass(Columnist.class)
                 .buildSessionFactory();
         return factory;
     }

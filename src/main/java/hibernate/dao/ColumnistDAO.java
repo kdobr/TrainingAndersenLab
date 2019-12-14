@@ -2,8 +2,10 @@ package hibernate.dao;
 
 import hibernate.exeptions.AuthorExistsExceprion;
 import hibernate.exeptions.AuthorNotExistsExceprion;
-import hibernate.model.writers.Author;
-import hibernate.model.editions.Book;
+import hibernate.model.editions.Edition;
+import hibernate.model.editions.Journal;
+import hibernate.model.writers.Columnist;
+import hibernate.model.writers.WritingPerson;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -13,72 +15,71 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class AuthorDAO {
+public class ColumnistDAO {
 
     private final SessionFactory factory;
-    private final BookDAO bookDAO;
+    private final JournalDAO journalDAO;
 
 
-    public AuthorDAO(SessionFactory factory) {
+    public ColumnistDAO(SessionFactory factory) {
         this.factory = factory;
-        bookDAO = new BookDAO(factory);
+        journalDAO = new JournalDAO(factory);
     }
 
-    public void addAuthor(String name) {
+    public void addColumnist(String name) {
 
         Transaction transaction = null;
         try (Session session = factory.openSession()) {
             transaction = session.beginTransaction();
-            Optional<Author> authorOpt = findAuthorByName(name, session);
-            authorOpt.ifPresent(a -> {
+            Optional<Columnist> colOpt = findColumnistByName(name, session);
+            colOpt.ifPresent(a -> {
                 throw new AuthorExistsExceprion(name);
             });
-            session.save(new Author(name));
+            session.save(new Columnist(name));
+            session.getTransaction().commit();
+        } catch (RuntimeException e) {
+            if (transaction != null) transaction.rollback();
+        }
+    }
+
+    public void deleteColumnist(String name) {
+        Transaction transaction = null;
+        try (Session session = factory.openSession()) {
+            transaction = session.beginTransaction();
+            Optional<Columnist> columnistOpt = findColumnistByName(name, session);
+            session.delete(columnistOpt.orElseThrow(() -> new AuthorNotExistsExceprion(name)));
+            session.getTransaction().commit();
+        } catch (RuntimeException e) {
+            if (transaction != null) transaction.rollback();
+        }
+    }
+
+    public Columnist getColumnistByName(String name) {
+        Transaction transaction = null;
+        Columnist columnist = null;
+        try (Session session = factory.openSession()) {
+            Optional<Columnist> columnistOpt = findColumnistByName(name, session);
+            columnist = columnistOpt.orElseThrow(() -> new AuthorNotExistsExceprion(name));
+            transaction = session.beginTransaction();
+            int aTemp =columnist.getJournalList().size();
             session.getTransaction().commit();
         } catch (RuntimeException e) {
             if (transaction != null) transaction.rollback();
             throw e;
         }
+        return columnist ;
     }
 
-    public void deleteAuthor(String name) {
+    public boolean addJournalToColumnist(String name, String title) {
         Transaction transaction = null;
+        Columnist columnist = null;
         try (Session session = factory.openSession()) {
+            Optional<Columnist> columnistOpt = findColumnistByName(name, session);
+            columnist = columnistOpt.orElseThrow(() -> new AuthorNotExistsExceprion(name));
             transaction = session.beginTransaction();
-            Optional<Author> authorOpt = findAuthorByName(name, session);
-            session.delete(authorOpt.orElseThrow(() -> new AuthorNotExistsExceprion(name)));
-            session.getTransaction().commit();
-        } catch (RuntimeException e) {
-            if (transaction != null) transaction.rollback();
-        }
-    }
-
-    public Author getAuthorByName(String name) {
-        Transaction transaction = null;
-        Author author = null;
-        try (Session session = factory.openSession()) {
-            Optional<Author> authorOpt = findAuthorByName(name, session);
-            author = authorOpt.orElseThrow(() -> new AuthorNotExistsExceprion(name));
-            transaction = session.beginTransaction();
-            int aTemp = author.getBookList().size();
-            session.getTransaction().commit();
-        } catch (RuntimeException e) {
-            if (transaction != null) transaction.rollback();
-            throw e;
-        }
-        return author;
-    }
-
-    public boolean addBookToAuthor(String name, String title) {
-        Transaction transaction = null;
-        Author author = null;
-        try (Session session = factory.openSession()) {
-            Optional<Author> authorOpt = findAuthorByName(name, session);
-            author = authorOpt.orElseThrow(() -> new AuthorNotExistsExceprion(name));
-            transaction = session.beginTransaction();
-            bookDAO.addBook(title);
-            Book book = bookDAO.getBookByTitle(title);
-            author.getBookList().add(book);
+            journalDAO.addJournal(title);
+            Journal journal = journalDAO.getJournalByTitle(title);
+            columnist.getJournalList().add(journal);
             session.getTransaction().commit();
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
@@ -89,42 +90,42 @@ public class AuthorDAO {
         return true;
     }
 
-    public Author getAuthorById(int id) {
-        Author author = null;
+    public Columnist getColumnistById(int id) {
+        Columnist columnist = null;
         Transaction transaction = null;
         try (Session session = factory.openSession()) {
 
             transaction = session.beginTransaction();
-            author = session.get(Author.class, id);
+            columnist = session.get(Columnist.class, id);
             session.getTransaction().commit();
         } catch (RuntimeException e) {
             if (transaction != null) {
                 transaction.rollback();
             }
         }
-        return author;
+        return columnist;
     }
 
-    public List<Author> getAllAuthors() {
-        List<Author> authorList = new ArrayList<>();
+    public List<Columnist> getAllColumnist() {
+        List<Columnist> columnistList = new ArrayList<>();
         try (Session session = factory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            authorList = session.createQuery("FROM Author").getResultList();
+            columnistList = session.createQuery("FROM Columnist").getResultList();
             transaction.commit();
         } catch (RuntimeException e) {
             e.printStackTrace();
         }
-        return authorList;
+        return columnistList;
     }
 
-    public void updateAuthor(String oldName, String newName) {
+    public void updateColumnist(String oldName, String newName) {
 
         Transaction transaction = null;
         try (Session session = factory.openSession()) {
             transaction = session.beginTransaction();
-            Optional<Author> authorCheck = findAuthorByName(oldName, session);
-            Author author = authorCheck.orElseThrow(() -> new AuthorNotExistsExceprion(oldName));
-            author.setName(newName);
+            Optional<Columnist> columnistCheck = findColumnistByName(oldName, session);
+            Columnist columnist = columnistCheck.orElseThrow(() -> new AuthorNotExistsExceprion(oldName));
+            columnist.setName(newName);
             transaction.commit();
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
@@ -134,17 +135,26 @@ public class AuthorDAO {
         }
     }
 
-    private Optional<Author> findAuthorByName(String name, Session session) {
+    private Optional<Columnist> findColumnistByName(String name, Session session) {
 
-        String hql = "from Author where name = :name";
+        String hql = "from Columnist where name = :name";
         Query query = session.createQuery(hql);
         query.setParameter("name", name);
-        List<Author> tempList = query.getResultList();
+        List<Columnist> tempList = query.getResultList();
         if (tempList.size() != 0) {
             return Optional.of(tempList.get(0));
         } else {
             return Optional.empty();
         }
+    }
+
+    public void printAllWritingPersons(){
+        Session session = factory.openSession();
+        String hql = "SELECT b FROM WritingPerson b";
+        Query query = session.createQuery(hql);
+        List<WritingPerson> list = query.getResultList();
+        System.out.println(list);
+        session.close();
     }
 
     private void printRollBackError() {

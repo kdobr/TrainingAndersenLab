@@ -1,4 +1,6 @@
-package hibernate.model;
+package hibernate.model.editions;
+
+import hibernate.model.writers.Author;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -6,15 +8,9 @@ import java.util.List;
 import java.util.Objects;
 
 @Entity
-@Table(name = "book")
-public class Book {
+@DiscriminatorValue("Book")
 
-    @Id
-    @Column(name = "id")
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
-    private int  id;
-    @Column(name = "title")
-    private String title;
+public class Book extends Edition {
 
     @ManyToMany(fetch = FetchType.LAZY,
             cascade = {CascadeType.DETACH, CascadeType.MERGE,
@@ -25,37 +21,10 @@ public class Book {
             inverseJoinColumns = @JoinColumn(name = "auth_id"))
     private List<Author> authorList;
 
-    public Book() {
-    }
+    public Book() {   }
 
     public Book(String title) {
-        this.title = title;
-    }
-
-    public Book(int id, String title) {
-        this.id = id;
-        this.title = title;
-    }
-
-    public Book(String title, List<Author> authorList) {
-        this.title = title;
-        this.authorList = authorList;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
+        super(title);
     }
 
     public List<Author> getAuthorList() {
@@ -77,22 +46,21 @@ public class Book {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Book)) return false;
+        if (!super.equals(o)) return false;
         Book book = (Book) o;
-        return getId() == book.getId() &&
-                Objects.equals(getTitle(), book.getTitle()) &&
-                Objects.equals(getAuthorList(), book.getAuthorList());
+        return Objects.equals(getAuthorList(), book.getAuthorList());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getTitle(), getAuthorList());
+        return Objects.hash(super.hashCode(), getAuthorList());
     }
 
     @Override
     public String toString() {
         return "Book{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
+                "id=" + this.getId() +
+                ", title='" + this.getTitle() + '\'' +
                                 '}';
     }
 }

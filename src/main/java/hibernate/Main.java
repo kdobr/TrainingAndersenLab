@@ -2,6 +2,9 @@ package hibernate;
 
 import hibernate.dao.AuthorDAO;
 import hibernate.dao.BookDAO;
+import hibernate.dao.ColumnistDAO;
+import hibernate.dao.JournalDAO;
+import hibernate.model.writers.Columnist;
 import hibernate.util.DBHelper;
 
 import org.hibernate.SessionFactory;
@@ -16,8 +19,19 @@ public class Main {
         SessionFactory factory = DBHelper.getSessionFactory();
         BookDAO bookDAO = new BookDAO(factory);
         AuthorDAO authorDAO = new AuthorDAO(factory);
-        System.out.println(bookDAO.getAllAuthorsOfBook("Third"));
-        System.out.println(bookDAO.getAllBooks());
+        JournalDAO journalDAO = new JournalDAO(factory);
+        ColumnistDAO columnistDAO = new ColumnistDAO(factory);
+//authorDAO.addAuthor("Peter");
+      //  authorDAO.updateAuthor("Peter", "Leo");
+      //  bookDAO.addBook("War and piece");
+      //  journalDAO.addJournal("Time");
+//columnistDAO.updateColumnist("pit", "Pit");
+//authorDAO.addBookToAuthor("Leo", "War and Pies");
+//columni
+journalDAO.printAllEditions();
+columnistDAO.printAllWritingPersons();
+
+
     }
 
     public static Connection getMysqlConnection() {
