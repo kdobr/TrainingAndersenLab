@@ -135,7 +135,6 @@ public class BookDAO {
         }
     }
 
-
     private void printRollBackError() {
         System.err.println("Couldn’t roll back transaction");
     }

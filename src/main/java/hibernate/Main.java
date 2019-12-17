@@ -1,9 +1,6 @@
 package hibernate;
 
-import hibernate.dao.AuthorDAO;
-import hibernate.dao.BookDAO;
-import hibernate.dao.ColumnistDAO;
-import hibernate.dao.JournalDAO;
+import hibernate.dao.*;
 import hibernate.model.writers.Columnist;
 import hibernate.util.DBHelper;
 
@@ -21,17 +18,10 @@ public class Main {
         AuthorDAO authorDAO = new AuthorDAO(factory);
         JournalDAO journalDAO = new JournalDAO(factory);
         ColumnistDAO columnistDAO = new ColumnistDAO(factory);
-//authorDAO.addAuthor("Peter");
-      //  authorDAO.updateAuthor("Peter", "Leo");
-      //  bookDAO.addBook("War and piece");
-      //  journalDAO.addJournal("Time");
-//columnistDAO.updateColumnist("pit", "Pit");
-//authorDAO.addBookToAuthor("Leo", "War and Pies");
-//columni
-journalDAO.printAllEditions();
-columnistDAO.printAllWritingPersons();
-
-
+        EditionDAO editionDAO = new EditionDAO(factory);
+        WritingPersonDAO writingPersonDAO = new WritingPersonDAO(factory);
+        editionDAO.printAllEditions();
+        writingPersonDAO.printAllWritingPersons();
     }
 
     public static Connection getMysqlConnection() {

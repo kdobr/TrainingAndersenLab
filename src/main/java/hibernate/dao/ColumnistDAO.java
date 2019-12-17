@@ -61,13 +61,13 @@ public class ColumnistDAO {
             Optional<Columnist> columnistOpt = findColumnistByName(name, session);
             columnist = columnistOpt.orElseThrow(() -> new AuthorNotExistsExceprion(name));
             transaction = session.beginTransaction();
-            int aTemp =columnist.getJournalList().size();
+            int aTemp = columnist.getJournalList().size();
             session.getTransaction().commit();
         } catch (RuntimeException e) {
             if (transaction != null) transaction.rollback();
             throw e;
         }
-        return columnist ;
+        return columnist;
     }
 
     public boolean addJournalToColumnist(String name, String title) {
@@ -146,15 +146,6 @@ public class ColumnistDAO {
         } else {
             return Optional.empty();
         }
-    }
-
-    public void printAllWritingPersons(){
-        Session session = factory.openSession();
-        String hql = "SELECT b FROM WritingPerson b";
-        Query query = session.createQuery(hql);
-        List<WritingPerson> list = query.getResultList();
-        System.out.println(list);
-        session.close();
     }
 
     private void printRollBackError() {

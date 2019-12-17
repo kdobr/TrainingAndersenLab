@@ -104,7 +104,7 @@ public class JournalDAO {
     }
 
     public List<Columnist> getAllColumnistOfJournal(String title) {
-        Journal journal =  getJournalByTitle(title);
+        Journal journal = getJournalByTitle(title);
         return journal.getColumnistList();
     }
 
@@ -135,15 +135,6 @@ public class JournalDAO {
         } else {
             return Optional.empty();
         }
-    }
-
-    public void printAllEditions(){
-        Session session = factory.openSession();
-        String hql = "SELECT b FROM Edition b";
-        Query query = session.createQuery(hql);
-        List<Edition> list = query.getResultList();
-        System.out.println(list);
-        session.close();
     }
 
     private void printRollBackError() {
