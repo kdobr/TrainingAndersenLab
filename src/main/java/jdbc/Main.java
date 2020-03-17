@@ -21,7 +21,10 @@ public class Main {
         System.out.println(authorDAO.getAllAuthors());
     }
 
+
+
     public static Connection getMysqlConnection() {
+
         try {
             DriverManager.registerDriver((Driver) Class.forName("com.mysql.cj.jdbc.Driver").newInstance());
             return DriverManager.
